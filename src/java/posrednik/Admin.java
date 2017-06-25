@@ -19,64 +19,63 @@ import messages.Login;
 
 public class Admin extends Thread {
 
-     private enum TipZahteva {
-          LOGIN, DOHVATI_PODATKE, LOGOUT, IZMENI_PODATKE;
+    private enum TipZahteva {
+        LOGIN, DOHVATI_PODATKE, LOGOUT, IZMENI_PODATKE;
 
-          public static TipZahteva fromInteger(int x) {
-               switch (x) {
-                    case 0:
-                         return LOGIN;
-                    case 1:
-                         return DOHVATI_PODATKE;
-                    case 2:
-                         return LOGOUT;
-                    case 3:
-                         return IZMENI_PODATKE;
-               }
-               return null;
-          }
-     }
+        public static TipZahteva fromInteger(int x) {
+            switch (x) {
+                case 0:
+                    return LOGIN;
+                case 1:
+                    return DOHVATI_PODATKE;
+                case 2:
+                    return LOGOUT;
+                case 3:
+                    return IZMENI_PODATKE;
+            }
+            return null;
+        }
+    }
 
-     public void run() {
-          JMSContext context = Main.connectionFactory.createContext();
-          JMSConsumer consumer = context.createConsumer(Main.zahtevi);
+    public void run() {
+        JMSContext context = Main.connectionFactory.createContext();
+        JMSConsumer consumer = context.createConsumer(Main.zahtevi);
+        JMSProducer producer = context.createProducer();
+        TextMessage odgovor = context.createTextMessage();
 
-          while (true) {
-               Message message = consumer.receive();
-               if (message instanceof ObjectMessage) {
-                    try {
-                         ObjectMessage objectMessage = (ObjectMessage) message;
-                         Object objekat = objectMessage.getObject();
-                         int tip = objectMessage.getIntProperty("tip");
+        while (true) {
+            Message message = consumer.receive();
+            if (message instanceof ObjectMessage) {
+                try {
+                    ObjectMessage objectMessage = (ObjectMessage) message;
+                    Object objekat = objectMessage.getObject();
+                    int tip = objectMessage.getIntProperty("tip");
 
-                         if (TipZahteva.fromInteger(tip).equals(TipZahteva.LOGIN)) {
-                              try {
-                                   obradaLogin((Login) objekat);
-                              } catch (JMSException e) {
-                                   e.printStackTrace();
-                                   System.exit(1);
-                              }
-                         }
-                    } catch (JMSException ex) {
-                         Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                    if (TipZahteva.fromInteger(tip).equals(TipZahteva.LOGIN)) {
+                        try {
+                            obradaLogin((Login) objekat, producer, odgovor);
+                        } catch (JMSException e) {
+                            e.printStackTrace();
+                            System.exit(1);
+                        }
                     }
-               }
-          }
-     }
+                } catch (JMSException ex) {
+                    Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
 
-     private void obradaLogin(Login login) throws JMSException {
-          Destination destination = Main.odgovori;
-          JMSContext context = Main.connectionFactory.createContext();
-          JMSProducer producer = context.createProducer();
-          TextMessage odgovor = context.createTextMessage();
+    private void obradaLogin(Login login, JMSProducer producer, TextMessage odgovor) throws JMSException {
+        Destination destination = Main.odgovori;
 
-          Korisnik k = KorisnikDao.dohvati(login.getUsername(), login.getPassword());
-          if (k != null) {
-               odgovor.setText("ok");
-          } else {
-               odgovor.setText("error");
-          }
-          producer.send(destination, odgovor);    
-     }
+        Korisnik k = KorisnikDao.dohvati(login.getUsername(), login.getPassword());
+        if (k != null) {
+            odgovor.setText("ok");
+        } else {
+            odgovor.setText("error");
+        }
+        producer.send(destination, odgovor);
+    }
 
 }

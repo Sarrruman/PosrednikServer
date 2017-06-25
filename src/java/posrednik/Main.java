@@ -32,8 +32,8 @@ public class Main {
 //          
 //          em.persist(korisnik);
 //          em.getTransaction().commit();
-          
-          
+//          
+//          
 //          Korisnik k = KorisnikDao.dohvati("123", "123");
 //          if (k!=null) {
 //               System.out.println("Username: " + k.getUsername() + ", pass: " + k.getPassword());
