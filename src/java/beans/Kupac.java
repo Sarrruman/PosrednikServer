@@ -13,32 +13,34 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "kupac")
-public class Kupac extends Korisnik {
+public class Kupac extends Korisnik implements Serializable {
 
-     @Column(name = "brKartice", length = 50)
-     private String brKartice;
+    private static final long serialVersionUID = 1L;
 
-     @OneToMany(mappedBy = "kupac")
-     private List<Rezervacija> rezervacije;
+    @Column(name = "brKartice", length = 50)
+    private String brKartice;
 
-     public String getBrKartice() {
-          return brKartice;
-     }
+    @OneToMany(mappedBy = "kupac")
+    private List<Rezervacija> rezervacije;
 
-     public void setBrKartice(String brKartice) {
-          this.brKartice = brKartice;
-     }
+    public String getBrKartice() {
+        return brKartice;
+    }
 
-     public List<Rezervacija> getRezervacije() {
-          return rezervacije;
-     }
+    public void setBrKartice(String brKartice) {
+        this.brKartice = brKartice;
+    }
 
-     public void setRezervacije(List<Rezervacija> rezervacije) {
-          this.rezervacije = rezervacije;
-     }
+    public List<Rezervacija> getRezervacije() {
+        return rezervacije;
+    }
 
-     @Override
-     public String toString() {
-          return "beans.Kupac{korisnik: " + super.toString() + ", cartNumber=" + brKartice + "}";
-     }
+    public void setRezervacije(List<Rezervacija> rezervacije) {
+        this.rezervacije = rezervacije;
+    }
+
+    @Override
+    public String toString() {
+        return "beans.Kupac{korisnik: " + super.toString() + ", cartNumber=" + brKartice + "}";
+    }
 }

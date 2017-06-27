@@ -10,6 +10,7 @@ import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -23,9 +24,13 @@ public class KorisnikDao {
         CriteriaQuery<Kupac> criteria = builder.createQuery(Kupac.class);
         Root<Kupac> from = criteria.from(Kupac.class);
         criteria.select(from);
-        Predicate where = builder.equal(from.get(Kupac_.username), username);
-        where = builder.and(where, (builder.equal(from.get(Kupac_.password), pass)));
-        criteria.where(where);
+
+        criteria.where(
+                builder.and(
+                        builder.equal(from.get("username"), username),
+                        builder.equal(from.get("password"), pass)
+                )
+        );
         TypedQuery<Kupac> typed = em.createQuery(criteria);
         try {
             return typed.getSingleResult();
@@ -39,9 +44,12 @@ public class KorisnikDao {
         CriteriaQuery<Prodavac> criteria = builder.createQuery(Prodavac.class);
         Root<Prodavac> from = criteria.from(Prodavac.class);
         criteria.select(from);
-        Predicate where = builder.equal(from.get(Prodavac_.username), username);
-        where = builder.and(where, (builder.equal(from.get(Prodavac_.password), pass)));
-        criteria.where(where);
+        criteria.where(
+                builder.and(
+                        builder.equal(from.get("username"), username),
+                        builder.equal(from.get("password"), pass)
+                )
+        );
         TypedQuery<Prodavac> typed = em.createQuery(criteria);
         try {
             return typed.getSingleResult();
@@ -51,6 +59,23 @@ public class KorisnikDao {
     }
 
     public static Kupac izmeniKupca(Kupac k) {
+        // provera da li username vec postoji
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<Kupac> criteria = builder.createQuery(Kupac.class);
+        Root<Kupac> from = criteria.from(Kupac.class);
+        criteria.select(from);
+        List<Kupac> results = em.createQuery(criteria).getResultList();
+
+        boolean uslov = true;
+        for (Kupac kTek : results) {
+            if (kTek.getUsername().equals(k.getUsername()) && !kTek.getId().equals(k.getId())) {
+                uslov = false;
+                break;
+            }
+        }
+        if (!uslov) {
+            return null;
+        }
         em.getTransaction().begin();
         Kupac res = em.merge(k);
         em.getTransaction().commit();

@@ -5,10 +5,10 @@
     <class>beans.Adresa</class>
     <class>beans.Apartman</class>
     <class>beans.Korisnik</class>
-    <class>beans.Kupac</class>
     <class>beans.Prodavac</class>
     <class>beans.Rezervacija</class>
     <class>beans.Soba</class>
+    <class>beans.Kupac</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/apartmani?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
