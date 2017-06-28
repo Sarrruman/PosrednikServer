@@ -13,28 +13,30 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "prodavac")
-public class Prodavac extends Korisnik {
+public class Prodavac extends Korisnik implements Serializable {
 
-     @Column(name = "POSBr")
-     private long POSBr;
+    private static final long serialVersionUID = 1L;
 
-     @OneToMany(mappedBy = "prodavac", fetch = FetchType.EAGER)
-     private List<Apartman> apartmani;
+    @Column(name = "POSBr")
+    private long POSBr;
 
-     public long getPOSBr() {
-          return POSBr;
-     }
+    @OneToMany(mappedBy = "prodavac", fetch = FetchType.EAGER)
+    private List<Apartman> apartmani;
 
-     public void setPOSBr(long POSBr) {
-          this.POSBr = POSBr;
-     }
+    public long getPOSBr() {
+        return POSBr;
+    }
 
-     public List<Apartman> getApartmani() {
-          return apartmani;
-     }
+    public void setPOSBr(long POSBr) {
+        this.POSBr = POSBr;
+    }
 
-     public void setApartmani(List<Apartman> apartmani) {
-          this.apartmani = apartmani;
-     }
+    public List<Apartman> getApartmani() {
+        return apartmani;
+    }
+
+    public void setApartmani(List<Apartman> apartmani) {
+        this.apartmani = apartmani;
+    }
 
 }
