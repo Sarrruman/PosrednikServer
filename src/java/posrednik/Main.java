@@ -11,6 +11,9 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import beans.*;
 import dao.ApartmanDao;
+import dao.RezervacijaDao;
+import dao.SobaDao;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.Destination;
@@ -20,7 +23,10 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
+import messages.ListaRezervacija;
 import messages.Login;
+import messages.RezervacijaMessage;
+import messages.SobeMessage;
 import utils.TipZahteva;
 
 public class Main {
@@ -108,6 +114,27 @@ public class Main {
             case BRISANJE_APARTMANA:
                 odgovor = obrisiApartman(objekat);
                 break;
+            case UNOS_SOBE:
+                odgovor = unesiSobu(objekat);
+                break;
+            case DOHVATANJE_SOBA_ZA_APARTMAN:
+                odgovor = dohvatiSobe(objekat);
+                break;
+            case IZMENA_SOBE:
+                odgovor = izmeniSobu(objekat);
+                break;
+            case BRISANJE_SOBE:
+                odgovor = obrisiSobu(objekat);
+                break;
+            case DOHVATANJE_SVIH_SOBA:
+                odgovor = dohvatiSveSobe(objekat);
+                break;
+            case NOVA_REZERVACIJA:
+                odgovor = unesiRezervaciju(objekat);
+                break;
+            case DOHVATANJE_SVIH_REZERVACIJA:
+                odgovor = dohvatiRezervacije(objekat);
+                break;
 
         }
         Destination destination = Main.odgovori;
@@ -144,8 +171,8 @@ public class Main {
 
     private static ObjectMessage obrisiApartman(Object objekat) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
-        Object o = ApartmanDao.obrisi((Apartman) objekat);
-        odgovor.setObject(new String());
+        String str = ApartmanDao.obrisi((Apartman) objekat);
+        odgovor.setObject(str);
         return odgovor;
     }
 
@@ -160,6 +187,55 @@ public class Main {
         ObjectMessage odgovor = context.createObjectMessage();
         Apartman a = ApartmanDao.unesi((Apartman) objekat, username, password);
         odgovor.setObject(a);
+        return odgovor;
+    }
+
+    private static ObjectMessage unesiSobu(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        Soba a = SobaDao.unesi((Soba) objekat);
+        odgovor.setObject(a);
+        return odgovor;
+    }
+
+    private static ObjectMessage dohvatiSobe(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        Apartman a = SobaDao.dohvatiZaApartman((Apartman) objekat);
+        odgovor.setObject(a);
+        return odgovor;
+    }
+
+    private static ObjectMessage izmeniSobu(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        Soba s = SobaDao.izmeni((Soba) objekat);
+        odgovor.setObject(s);
+        return odgovor;
+    }
+
+    private static ObjectMessage obrisiSobu(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        Object o = SobaDao.obrisi((Soba) objekat);
+        odgovor.setObject(new String());
+        return odgovor;
+    }
+
+    private static ObjectMessage dohvatiSveSobe(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        SobeMessage o = SobaDao.dohvatiSve();
+        odgovor.setObject(o);
+        return odgovor;
+    }
+
+    private static ObjectMessage unesiRezervaciju(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        String a = RezervacijaDao.unesi((RezervacijaMessage) objekat);
+        odgovor.setObject(a);
+        return odgovor;
+    }
+
+    private static ObjectMessage dohvatiRezervacije(Object objekat) throws JMSException {
+        ObjectMessage odgovor = context.createObjectMessage();
+        ListaRezervacija o = RezervacijaDao.dohvatiSve((Soba) objekat);
+        odgovor.setObject(o);
         return odgovor;
     }
 

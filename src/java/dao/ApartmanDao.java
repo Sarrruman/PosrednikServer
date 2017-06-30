@@ -60,19 +60,23 @@ public class ApartmanDao {
         return res;
     }
 
-    public static Object obrisi(Apartman apartman) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
-        EntityManager em = emf.createEntityManager();
-        em.getTransaction().begin();
+    public static String obrisi(Apartman apartman) {
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
 
-        Adresa adr = em.merge(apartman.getAdresa());
-        Apartman ap = em.merge(apartman);
-        em.remove(adr);
-        em.remove(ap);
+            Adresa adr = em.merge(apartman.getAdresa());
+            Apartman ap = em.merge(apartman);
+            em.remove(adr);
+            em.remove(ap);
 
-        em.getTransaction().commit();
-        em.close();
-        return new Object();
+            em.getTransaction().commit();
+            em.close();
+            return new String();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
