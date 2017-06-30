@@ -1,6 +1,7 @@
 package dao;
 
 import beans.*;
+import java.sql.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -26,16 +27,32 @@ public class RezervacijaDao {
             rezervacija.setSoba(soba);
             rezervacija.setKupac(kupac);
 
-            em.persist(rezervacija);
+            // provera da li je soba vec zauzeta u tom terminu
+            List<Rezervacija> rezervacije = em.createNamedQuery("dohvatiRezervacije", Rezervacija.class).setParameter(1, soba.getId())
+                    .getResultList();
 
-            em.getTransaction().commit();
-            em.close();
+            boolean moze = true;
+            for (int i = 0; i < rezervacije.size(); i++) {
+                if (!proveriDatum(rezervacije.get(i), msg.getDatumOd(), msg.getDatumDo())) {
+                    moze = false;
+                    break;
+                }
+            }
 
+            if (moze) {
+                em.persist(rezervacija);
+                em.getTransaction().commit();
+                em.close();
+                return new String();
+            } else {
+                em.getTransaction().commit();
+                em.close();
+                return null;
+            }
         } catch (final NoResultException nre) {
             return null;
         }
 
-        return new String();
     }
 
     public static ListaRezervacija dohvatiSve(Soba soba) {
@@ -56,5 +73,19 @@ public class RezervacijaDao {
         } catch (final NoResultException nre) {
             return null;
         }
+    }
+
+    private static boolean proveriDatum(Rezervacija r, Date datumOd, Date datumDo) {
+        if (datumOd.compareTo(r.getDatumPrijave()) >= 0 && datumOd.compareTo(r.getDatumOdjave()) <= 0) {
+            return false;
+        }
+        if (datumDo.compareTo(r.getDatumPrijave()) >= 0 && datumDo.compareTo(r.getDatumOdjave()) <= 0) {
+            return false;
+        }
+        if (datumOd.compareTo(r.getDatumPrijave()) <= 0 && datumDo.compareTo(r.getDatumOdjave()) >= 0) {
+            return false;
+        }
+
+        return true;
     }
 }
