@@ -23,6 +23,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
+import javax.jms.TextMessage;
 import messages.ListaRezervacija;
 import messages.Login;
 import messages.RezervacijaMessage;
@@ -37,6 +38,10 @@ public class Main {
     static Topic odgovori;
     @Resource(lookup = "jms/__defaultConnectionFactory")
     static ConnectionFactory connectionFactory;
+    @Resource(lookup = "Obavestenja")
+    public static Topic obavestenja;
+    @Resource(lookup = "ObavestenjaSobe")
+    public static Topic obavestenjaSobe;
 
     public static JMSContext context;
     public static JMSConsumer consumer;
@@ -193,6 +198,13 @@ public class Main {
     private static ObjectMessage unesiSobu(Object objekat) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
         Soba a = SobaDao.unesi((Soba) objekat);
+        if (a != null) {
+            Destination destination = Main.obavestenjaSobe;
+            TextMessage obavestenje = context.createTextMessage();
+            producer = context.createProducer();
+
+            producer.send(destination, obavestenje);
+        }
         odgovor.setObject(a);
         return odgovor;
     }
@@ -214,6 +226,13 @@ public class Main {
     private static ObjectMessage obrisiSobu(Object objekat) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
         Object o = SobaDao.obrisi((Soba) objekat);
+        if (o != null) {
+            Destination destination = Main.obavestenjaSobe;
+            TextMessage obavestenje = context.createTextMessage();
+            producer = context.createProducer();
+
+            producer.send(destination, obavestenje);
+        }
         odgovor.setObject(new String());
         return odgovor;
     }
@@ -229,6 +248,14 @@ public class Main {
         ObjectMessage odgovor = context.createObjectMessage();
         String a = RezervacijaDao.unesi((RezervacijaMessage) objekat);
         odgovor.setObject(a);
+
+        if (a != null) {
+            Destination destination = Main.obavestenja;
+            TextMessage obavestenje = context.createTextMessage();
+            producer = context.createProducer();
+
+            producer.send(destination, obavestenje);
+        }
         return odgovor;
     }
 
