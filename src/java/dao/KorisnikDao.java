@@ -16,10 +16,11 @@ import javax.persistence.criteria.Root;
 
 public class KorisnikDao {
 
-    private static EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
-    private static EntityManager em = emf.createEntityManager();
-
     public static Kupac dohvatiKupca(String username, String pass) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<Kupac> criteria = builder.createQuery(Kupac.class);
         Root<Kupac> from = criteria.from(Kupac.class);
@@ -33,13 +34,21 @@ public class KorisnikDao {
         );
         TypedQuery<Kupac> typed = em.createQuery(criteria);
         try {
-            return typed.getSingleResult();
+            Kupac kupac = typed.getSingleResult();
+            em.getTransaction().commit();
+            em.close();
+
+            return kupac;
         } catch (final NoResultException nre) {
             return null;
         }
     }
 
     public static Prodavac dohvatiProdavca(String username, String pass) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<Prodavac> criteria = builder.createQuery(Prodavac.class);
         Root<Prodavac> from = criteria.from(Prodavac.class);
@@ -52,13 +61,20 @@ public class KorisnikDao {
         );
         TypedQuery<Prodavac> typed = em.createQuery(criteria);
         try {
-            return typed.getSingleResult();
+            Prodavac prodavac = typed.getSingleResult();
+            em.getTransaction().commit();
+            em.close();
+            return prodavac;
         } catch (final NoResultException nre) {
             return null;
         }
     }
 
     public static Kupac izmeniKupca(Kupac k) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
         // provera da li username vec postoji
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<Kupac> criteria = builder.createQuery(Kupac.class);
@@ -76,16 +92,21 @@ public class KorisnikDao {
         if (!uslov) {
             return null;
         }
-        em.getTransaction().begin();
         Kupac res = em.merge(k);
         em.getTransaction().commit();
+        em.close();
+
         return res;
     }
 
     public static Prodavac izmeniProdavca(Prodavac k) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+        EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
+
         Prodavac res = em.merge(k);
         em.getTransaction().commit();
+        em.close();
         return res;
     }
 

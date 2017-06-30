@@ -11,7 +11,7 @@ package utils;
  */
 public enum TipZahteva {
     LOGIN_KUPAC, LOGIN_PRODAVAC, LOGOUT, IZMENI_PODATKE_KUPAC, IZMENI_PODATKE_PRODAVAC,
-    UNOS_APARTMANA, IZMENA_APARTMANA, BRISANJE_APARTMANA;
+    UNOS_APARTMANA, IZMENA_APARTMANA, BRISANJE_APARTMANA, DOHVATANJE_APARTMANA_ZA_PRODAVCA;
 
     public static TipZahteva fromInteger(int x) {
         switch (x) {
@@ -31,6 +31,8 @@ public enum TipZahteva {
                 return IZMENA_APARTMANA;
             case 7:
                 return BRISANJE_APARTMANA;
+            case 8:
+                return DOHVATANJE_APARTMANA_ZA_PRODAVCA;
 
         }
         return null;

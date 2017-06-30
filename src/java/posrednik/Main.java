@@ -1,6 +1,5 @@
 package posrednik;
 
-import beans.Adresa;
 import beans.Apartman;
 import dao.KorisnikDao;
 import javax.annotation.Resource;
@@ -21,36 +20,29 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
-import javax.jms.TextMessage;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import messages.Login;
-import utils.Helpers;
 import utils.TipZahteva;
 
 public class Main {
-    
+
     @Resource(lookup = "Zahtevi")
     static Queue zahtevi;
     @Resource(lookup = "Odgovori")
     static Topic odgovori;
     @Resource(lookup = "jms/__defaultConnectionFactory")
     static ConnectionFactory connectionFactory;
-    
+
     public static JMSContext context;
     public static JMSConsumer consumer;
     public static JMSProducer producer;
-    
+
     public static void main(String[] args) {
         context = connectionFactory.createContext();
         consumer = context.createConsumer(Main.zahtevi);
         producer = context.createProducer();
-        
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
-        EntityManager em = emf.createEntityManager();
+//
+//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PosrednikPU");
+//        EntityManager em = emf.createEntityManager();
 
 //        em.getTransaction().begin();
 //        Kupac korisnik = new Kupac();
@@ -69,7 +61,7 @@ public class Main {
 //        }
         System.out.println(
                 "Listening for requests started!");
-        
+
         while (true) {
             Message message = consumer.receive();
 
@@ -85,14 +77,14 @@ public class Main {
                 System.exit(1);
             }
         }
-        
+
     }
-    
+
     private static void obradiPoruku(Message message) throws JMSException {
         ObjectMessage objectMessage = (ObjectMessage) message;
         Object objekat = objectMessage.getObject();
         int tip = objectMessage.getIntProperty("tip");
-        
+
         ObjectMessage odgovor = null;
         switch (TipZahteva.fromInteger(tip)) {
             case LOGIN_KUPAC:
@@ -106,22 +98,26 @@ public class Main {
                 break;
             case IZMENI_PODATKE_PRODAVAC:
                 odgovor = izmeniPodatkeProdavca((Prodavac) objekat);
+                break;
             case UNOS_APARTMANA:
                 odgovor = unesiApartman(objekat, message.getStringProperty("username"), message.getStringProperty("password"));
+                break;
             case IZMENA_APARTMANA:
                 odgovor = izmeniApartman(objekat);
+                break;
             case BRISANJE_APARTMANA:
                 odgovor = obrisiApartman(objekat);
-            
+                break;
+
         }
         Destination destination = Main.odgovori;
         odgovor.setStringProperty("id", message.getStringProperty("id"));
         producer.send(destination, odgovor);
     }
-    
+
     private static ObjectMessage obradaLogin(Login login, JMSProducer producer, String tip) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
-        
+
         if (tip.equals("kupac")) {
             Kupac k = KorisnikDao.dohvatiKupca(login.getUsername(), login.getPassword());
             odgovor.setObject(k);
@@ -131,34 +127,40 @@ public class Main {
         }
         return odgovor;
     }
-    
+
     private static ObjectMessage izmeniPodatkeKupca(Kupac kupac) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
         Kupac k = KorisnikDao.izmeniKupca(kupac);
         odgovor.setObject(k);
         return odgovor;
     }
-    
+
     private static ObjectMessage izmeniPodatkeProdavca(Prodavac prodavac) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
         Prodavac p = KorisnikDao.izmeniProdavca(prodavac);
         odgovor.setObject(p);
         return odgovor;
     }
-    
+
     private static ObjectMessage obrisiApartman(Object objekat) throws JMSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ObjectMessage odgovor = context.createObjectMessage();
+        Object o = ApartmanDao.obrisi((Apartman) objekat);
+        odgovor.setObject(new String());
+        return odgovor;
     }
-    
+
     private static ObjectMessage izmeniApartman(Object objekat) throws JMSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ObjectMessage odgovor = context.createObjectMessage();
+        Apartman a = ApartmanDao.izmeni((Apartman) objekat);
+        odgovor.setObject(a);
+        return odgovor;
     }
-    
+
     private static ObjectMessage unesiApartman(Object objekat, String username, String password) throws JMSException {
         ObjectMessage odgovor = context.createObjectMessage();
         Apartman a = ApartmanDao.unesi((Apartman) objekat, username, password);
         odgovor.setObject(a);
         return odgovor;
     }
-    
+
 }
